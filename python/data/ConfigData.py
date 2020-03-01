@@ -1,5 +1,11 @@
 # -*- coding: UTF-8 -*-
 
+"""
+Authors: Carry·Leng
+
+Date: 2020/03/01 22:11:00
+"""
+
 class ConfigData(object):
 
     local_config = None
