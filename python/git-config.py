@@ -12,13 +12,17 @@ from data.ConfigData import ConfigData
 import os
 
 
-def setConfig(attr, value, git_local = False, git_global = False, git_system = False):
+def setConfig(attr, value, git_local = False, \
+    git_global = False, git_system = False, directory = None):
     if isEmpty(attr):
         print("set attribute is empty!")
         return None
+    cur_directory = os.getcwd()
+    if not isEmpty(directory):
+        os.chdir(directory)
     if isEmpty(value):
         value = ""
-        print("set attribute:%s value is empty!"%attr)
+        print("set attribute:%s value is empty!" % attr)
     data = ConfigData()
     if git_system:
         result = execSetConfig("--system", attr, value)
@@ -32,17 +36,22 @@ def setConfig(attr, value, git_local = False, git_global = False, git_system = F
     if not git_local and not git_global and not git_system:
         result = execSetConfig("", attr, value)
         data.setLocalConfig(attr, result)
+    os.chdir(cur_directory)
 
     return data
 
 
-def addConfig(attr, value, git_local = False, git_global = False, git_system = False):
+def addConfig(attr, value, git_local = False, \
+    git_global = False, git_system = False, directory = None):
     if isEmpty(attr):
         print("add attribute is empty!")
         return None
+    cur_directory = os.getcwd()
+    if not isEmpty(directory):
+        os.chdir(directory)
     if isEmpty(value):
         value = ""
-        print("add attribute:%s value is empty!"%attr)
+        print("add attribute:%s value is empty!" % attr)
     data = ConfigData()
     if git_system:
         result = execSetConfig("--system", attr, value, "--add")
@@ -60,14 +69,19 @@ def addConfig(attr, value, git_local = False, git_global = False, git_system = F
         result = execSetConfig("", attr, value, "--add")
         for value in result.splitlines():
             data.setLocalConfig(attr, value.strip())
+    os.chdir(cur_directory)
 
     return data
 
 
-def getConfig(attr, get_all = False, git_local = False, git_global = False, git_system = False):
+def getConfig(attr, get_all = False, git_local = False, \
+    git_global = False, git_system = False, directory = None):
     if isEmpty(attr):
         print("get attribute is empty!")
         return None
+    cur_directory = os.getcwd()
+    if not isEmpty(directory):
+        os.chdir(directory)
     get_mode = "--get"
     if get_all:
         get_mode = "--get-all"
@@ -88,14 +102,19 @@ def getConfig(attr, get_all = False, git_local = False, git_global = False, git_
         result = execGetConfig("", attr, get_mode)
         for value in result.splitlines():
             data.setLocalConfig(attr, value.strip())
+    os.chdir(cur_directory)
     
     return data
 
 
-def delConfig(attr, del_all = False, git_local = False, git_global = False, git_system = False):
+def delConfig(attr, del_all = False, git_local = False, \
+    git_global = False, git_system = False, directory = None):
     if isEmpty(attr):
         print("del attribute is empty!")
         return None
+    cur_directory = os.getcwd()
+    if not isEmpty(directory):
+        os.chdir(directory)
     del_mode = "--unset"
     if del_all:
         del_mode = "--unset-all"
@@ -116,10 +135,15 @@ def delConfig(attr, del_all = False, git_local = False, git_global = False, git_
         result = execDelConfig("", attr, del_mode)
         for value in result.splitlines():
             data.setLocalConfig(attr, value.strip())
+    os.chdir(cur_directory)
 
     return data
 
-def loadConfig(git_local = False, git_global = False, git_system = False):
+def loadConfig(git_local = False, git_global = False, \
+    git_system = False, directory = None):
+    cur_directory = os.getcwd()
+    if not isEmpty(directory):
+        os.chdir(directory)
     data = ConfigData()
     if not git_local and not git_global and not git_system:
         git_local = True
@@ -134,7 +158,7 @@ def loadConfig(git_local = False, git_global = False, git_system = False):
             elif len(key_value_pair) == 2:
                 data.setSystemConfig(key_value_pair[0].strip(), key_value_pair[1].strip())
             elif len(key_value_pair) > 2:
-                raise Exception("git config --system %s not a key value pair!"%line)
+                raise Exception("git config --system %s not a key value pair!" % line)
     if git_global:
         result = execLoadConfig("--global")
         for line in result.splitlines():
@@ -144,7 +168,7 @@ def loadConfig(git_local = False, git_global = False, git_system = False):
             elif len(key_value_pair) == 2:
                 data.setGlobalConfig(key_value_pair[0], key_value_pair[1])
             elif len(key_value_pair) > 2:
-                raise Exception("git config --global %s not a key value pair!"%line)
+                raise Exception("git config --global %s not a key value pair!" % line)
     if git_local:
         result = execLoadConfig("--local")
         for line in result.splitlines():
@@ -154,37 +178,44 @@ def loadConfig(git_local = False, git_global = False, git_system = False):
             elif len(key_value_pair) == 2:
                 data.setLocalConfig(key_value_pair[0], key_value_pair[1])
             elif len(key_value_pair) > 2:
-                raise Exception("git config --local %s not a key value pair!"%line) 
+                raise Exception("git config --local %s not a key value pair!" % line)
+    os.chdir(cur_directory) 
 
     return data
 
 
-def setConfigUserName(user_name, git_local = False, git_global = False, git_system = False):
-    setConfig("user.name", user_name, git_local, git_global, git_system)
+def setConfigUserName(user_name, git_local = False, \
+    git_global = False, git_system = False, directory = None):
+    setConfig("user.name", user_name, git_local, git_global, git_system, directory)
 
 
-def getConfigUserName(git_local = False, git_global = False, git_system = False):
-    getConfig("user.name", False, git_local, git_global, git_system)
+def getConfigUserName(git_local = False, git_global = False, \
+    git_system = False, directory = None):
+    getConfig("user.name", False, git_local, git_global, git_system, directory)
 
 
-def delConfigUserName(git_local = False, git_global = False, git_system = False):
-    delConfig("user.name", False, git_local, git_global, git_system)
+def delConfigUserName(git_local = False, git_global = False, \
+    git_system = False, directory = None):
+    delConfig("user.name", False, git_local, git_global, git_system, directory)
 
 
-def setConfigUserEmail(user_email, git_local = False, git_global = False, git_system = False):
-    setConfig("user.email", user_email, git_local, git_global, git_system)
+def setConfigUserEmail(user_email, git_local = False, git_global = False, \
+    git_system = False, directory = None):
+    setConfig("user.email", user_email, git_local, git_global, git_system, directory)
 
 
-def getConfigUserEmail(git_local = False, git_global = False, git_system = False):
-    getConfig("user.email", False, git_local, git_global, git_system)
+def getConfigUserEmail(git_local = False, git_global = False, \
+    git_system = False, directory = None):
+    getConfig("user.email", False, git_local, git_global, git_system, directory)
 
 
-def delConfigUserEmail(git_local = False, git_global = False, git_system = False):
-    delConfig("user.email", False, git_local, git_global, git_system)
+def delConfigUserEmail(git_local = False, git_global = False, \
+    git_system = False, directory = None):
+    delConfig("user.email", False, git_local, git_global, git_system, directory)
 
 
 def execGetConfig(level, attr, mode = "--get"):
-    get_cmd = "git config %s %s %s"%(level, mode, attr)
+    get_cmd = "git config %s %s %s" % (level, mode, attr)
     print(get_cmd)
     result = os.popen(get_cmd).read().strip()
     print(result)
@@ -192,7 +223,7 @@ def execGetConfig(level, attr, mode = "--get"):
 
 
 def execLoadConfig(level):
-    load_cmd = "git config %s -l"%(level)
+    load_cmd = "git config %s -l" % (level)
     print(load_cmd)
     result = os.popen(load_cmd).read().strip()
     print(result)
@@ -200,7 +231,7 @@ def execLoadConfig(level):
 
 
 def execDelConfig(level, attr, mode = "--unset"):
-    del_cmd = 'git config %s %s %s'%(level, mode, attr)
+    del_cmd = 'git config %s %s %s' % (level, mode, attr)
     print(del_cmd)
     get_mode = "--get"
     if mode == "--unset-all":
@@ -214,7 +245,7 @@ def execDelConfig(level, attr, mode = "--unset"):
 
 
 def execSetConfig(level, attr, value, mode = ""):
-    set_cmd = 'git config %s %s %s "%s"'%(level, mode, attr, value)
+    set_cmd = 'git config %s %s %s "%s"' % (level, mode, attr, value)
     print(set_cmd)
     result = os.popen(set_cmd).read().strip()
     print(result)
@@ -226,6 +257,7 @@ def execSetConfig(level, attr, value, mode = ""):
 
 
 if __name__ == "__main__":
+    print("git-config start")
     data = setConfig("carry.set1", "1", True)
     print(data)
     print("=====================")
