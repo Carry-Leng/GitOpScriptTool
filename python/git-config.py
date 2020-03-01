@@ -29,6 +29,9 @@ def setConfig(attr, value, git_local = False, git_global = False, git_system = F
     if git_local:
         result = execSetConfig("--local", attr, value)
         data.setLocalConfig(attr, result)
+    if not git_local and not git_global and not git_system:
+        result = execSetConfig("", attr, value)
+        data.setLocalConfig(attr, result)
 
     return data
 
@@ -51,6 +54,10 @@ def addConfig(attr, value, git_local = False, git_global = False, git_system = F
             data.setGlobalConfig(attr, value.strip())
     if git_local:
         result = execSetConfig("--local", attr, value, "--add")
+        for value in result.splitlines():
+            data.setLocalConfig(attr, value.strip())
+    if not git_local and not git_global and not git_system:
+        result = execSetConfig("", attr, value, "--add")
         for value in result.splitlines():
             data.setLocalConfig(attr, value.strip())
 
@@ -77,6 +84,10 @@ def getConfig(attr, get_all = False, git_local = False, git_global = False, git_
         result = execGetConfig("--local", attr, get_mode)
         for value in result.splitlines():
             data.setLocalConfig(attr, value.strip())
+    if not git_local and not git_global and not git_system:
+        result = execGetConfig("", attr, get_mode)
+        for value in result.splitlines():
+            data.setLocalConfig(attr, value.strip())
     
     return data
 
@@ -101,6 +112,49 @@ def delConfig(attr, del_all = False, git_local = False, git_global = False, git_
         result = execDelConfig("--local", attr, del_mode)
         for value in result.splitlines():
             data.setLocalConfig(attr, value.strip())
+    if not git_local and not git_global and not git_system:
+        result = execDelConfig("", attr, del_mode)
+        for value in result.splitlines():
+            data.setLocalConfig(attr, value.strip())
+
+    return data
+
+def loadConfig(git_local = False, git_global = False, git_system = False):
+    data = ConfigData()
+    if not git_local and not git_global and not git_system:
+        git_local = True
+        git_global = True
+        git_system = True
+    if git_system:
+        result = execLoadConfig("--system")
+        for line in result.splitlines():
+            key_value_pair = line.strip().split("=")
+            if len(key_value_pair) == 1:
+                data.setSystemConfig(key_value_pair[0], "")
+            elif len(key_value_pair) == 2:
+                data.setSystemConfig(key_value_pair[0].strip(), key_value_pair[1].strip())
+            elif len(key_value_pair) > 2:
+                raise Exception("git config --system %s not a key value pair!"%line)
+    if git_global:
+        result = execLoadConfig("--global")
+        for line in result.splitlines():
+            key_value_pair = line.strip().split("=")
+            if len(key_value_pair) == 1:
+                data.setGlobalConfig(key_value_pair[0], "")
+            elif len(key_value_pair) == 2:
+                data.setGlobalConfig(key_value_pair[0], key_value_pair[1])
+            elif len(key_value_pair) > 2:
+                raise Exception("git config --global %s not a key value pair!"%line)
+    if git_local:
+        result = execLoadConfig("--local")
+        for line in result.splitlines():
+            key_value_pair = line.strip().split("=")
+            if len(key_value_pair) == 1:
+                data.setLocalConfig(key_value_pair[0], "")
+            elif len(key_value_pair) == 2:
+                data.setLocalConfig(key_value_pair[0], key_value_pair[1])
+            elif len(key_value_pair) > 2:
+                raise Exception("git config --local %s not a key value pair!"%line) 
 
     return data
 
@@ -133,6 +187,14 @@ def execGetConfig(level, attr, mode = "--get"):
     get_cmd = "git config %s %s %s"%(level, mode, attr)
     print(get_cmd)
     result = os.popen(get_cmd).read().strip()
+    print(result)
+    return result
+
+
+def execLoadConfig(level):
+    load_cmd = "git config %s -l"%(level)
+    print(load_cmd)
+    result = os.popen(load_cmd).read().strip()
     print(result)
     return result
 
@@ -198,6 +260,9 @@ if __name__ == "__main__":
     print(data)
     print("=====================")
     data = delConfig("carry.add", False, True, True, True)
+    print(data)
+    print("=====================")
+    data = loadConfig()
     print(data)
     print("=====================")
     
